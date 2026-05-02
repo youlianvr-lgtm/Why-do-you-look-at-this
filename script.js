@@ -12,22 +12,45 @@ class Game {
     this.foundations = [];
     this.foundationSuits = [];
     this.history = [];
-    this.onWin = null; // callback победы (UI)
+    this.onWin = null;
+    this.lastMove = null;
+
+    this.config = {
+      suitsCount: 4,
+      cardsPerSuit: 10,
+      columnsCount: 6
+    };
   }
 
-  initGame() {
+  setConfig(next) {
+    const suitsCount = Math.max(1, Math.min(12, Number(next?.suitsCount ?? 4)));
+    const cardsPerSuit = Math.max(
+      1,
+      Math.min(10, Number(next?.cardsPerSuit ?? 10))
+    );
+
+    const totalCards = suitsCount * cardsPerSuit;
+    const columnsCountRaw = Number(next?.columnsCount);
+    const columnsCount =
+      Number.isFinite(columnsCountRaw) && columnsCountRaw > 0
+        ? Math.floor(columnsCountRaw)
+        : Math.min(8, Math.max(4, Math.ceil(totalCards / 7)));
+
+    this.config = { suitsCount, cardsPerSuit, columnsCount };
+  }
+
+  initGame(config) {
     this.reset();
+    this.setConfig(config);
 
-    const TOTAL_SUITS = 12;
-    const SELECTED_SUITS = 4;
-    const VALUES = [1,2,3,4,5,6,7,8,9,10];
-    const COLUMNS = 6;
+    const totalSuitsAvailable = 12;
+    const values = Array.from({ length: this.config.cardsPerSuit }, (_, i) => i + 1);
 
-    const suits = this.pickRandomSuits(TOTAL_SUITS, SELECTED_SUITS);
-    const deck = this.createSolvableDeck(suits, VALUES);
+    const suits = this.pickRandomSuits(totalSuitsAvailable, this.config.suitsCount);
+    const deck = this.createDeck(suits, values);
 
-    this.tableau = Array.from({ length: COLUMNS }, () => []);
-    deck.forEach((card, i) => this.tableau[i % COLUMNS].push(card));
+    this.tableau = Array.from({ length: this.config.columnsCount }, () => []);
+    deck.forEach((card, i) => this.tableau[i % this.config.columnsCount].push(card));
 
     this.tableau.forEach(col => {
       if (col.length) col[col.length - 1].faceUp = true;
@@ -40,21 +63,21 @@ class Game {
   }
 
   // ===============================
-  // ПРОВЕРКА ПОБЕДЫ
+  // Победа
   // ===============================
   checkWin() {
-    const allComplete = this.foundations.every(f => f.length === 10);
-    if (allComplete && typeof this.onWin === 'function') {
-      this.onWin();
-    }
+    const allComplete = this.foundations.every(
+      f => f.length === this.config.cardsPerSuit
+    );
+    if (allComplete && typeof this.onWin === "function") this.onWin();
   }
 
   isFoundationComplete(index) {
-    return this.foundations[index].length === 10;
+    return this.foundations[index].length === this.config.cardsPerSuit;
   }
 
   // ===============================
-  // СЛУЖЕБНЫЕ МЕТОДЫ
+  // Служебные методы
   // ===============================
   pickRandomSuits(total, count) {
     const suits = [];
@@ -65,29 +88,21 @@ class Game {
     return suits;
   }
 
-  createSolvableDeck(suits, values) {
+  createDeck(suits, values) {
     const deck = [];
     suits.forEach(suit => {
-      const seq = values.map(value => ({
-        suit,
-        value,
-        faceUp: false,
-        img: `cards/${suit}/${value}.png`
-      }));
-      this.shuffle(seq);
-      deck.push(...seq);
+      values.forEach(value => {
+        deck.push({
+          id: `${suit}:${value}`,
+          suit,
+          value,
+          faceUp: false,
+          img: `cards/${suit}/${value}.png`
+        });
+      });
     });
-    return this.interleave(deck, suits.length);
-  }
-
-  interleave(deck, suitCount) {
-    const result = [];
-    const groups = Array.from({ length: suitCount }, () => []);
-    deck.forEach(card => groups[card.suit % suitCount].push(card));
-    while (groups.some(g => g.length)) {
-      groups.forEach(g => g.length && result.push(g.pop()));
-    }
-    return result;
+    this.shuffle(deck);
+    return deck;
   }
 
   shuffle(arr) {
@@ -98,13 +113,17 @@ class Game {
   }
 
   // ===============================
-  // ПЕРЕМЕЩЕНИЯ
+  // История
   // ===============================
   saveState() {
-    this.history.push(JSON.stringify({
-      tableau: this.tableau,
-      foundations: this.foundations
-    }));
+    this.history.push(
+      JSON.stringify({
+        tableau: this.tableau,
+        foundations: this.foundations,
+        foundationSuits: this.foundationSuits,
+        config: this.config
+      })
+    );
   }
 
   undo() {
@@ -112,6 +131,24 @@ class Game {
     const state = JSON.parse(this.history.pop());
     this.tableau = state.tableau;
     this.foundations = state.foundations;
+    this.foundationSuits = state.foundationSuits ?? this.foundationSuits;
+    this.config = state.config ?? this.config;
+  }
+
+  // ===============================
+  // Перемещения
+  // ===============================
+  getMovableStack(fromCol, startIndex) {
+    const col = this.tableau[fromCol];
+    const stack = col.slice(startIndex);
+    if (!stack.length) return null;
+    if (!stack[0].faceUp) return null;
+
+    for (let i = 0; i < stack.length; i++) {
+      if (!stack[i].faceUp) return null;
+      if (i > 0 && stack[i - 1].value !== stack[i].value + 1) return null;
+    }
+    return stack;
   }
 
   canMoveToTableau(card, colIndex) {
@@ -122,10 +159,13 @@ class Game {
   }
 
   moveStack(fromCol, startIndex, toCol) {
+    if (fromCol === toCol) return false;
+
     const from = this.tableau[fromCol];
     const to = this.tableau[toCol];
-    const stack = from.slice(startIndex);
-    if (!this.canMoveToTableau(stack[0], toCol)) return;
+    const stack = this.getMovableStack(fromCol, startIndex);
+    if (!stack) return false;
+    if (!this.canMoveToTableau(stack[0], toCol)) return false;
 
     this.saveState();
     this.tableau[toCol] = to.concat(stack);
@@ -133,6 +173,10 @@ class Game {
 
     if (this.tableau[fromCol].length)
       this.tableau[fromCol][this.tableau[fromCol].length - 1].faceUp = true;
+
+    this.lastMove = { type: "tableau", toCol, cardId: stack[0]?.id ?? null };
+    this.checkWin();
+    return true;
   }
 
   canMoveToFoundation(card, index) {
@@ -141,7 +185,32 @@ class Game {
     if (f.length === 0) return card.value === 1;
     return f[f.length - 1].value + 1 === card.value;
   }
+
+  moveToFoundation(fromCol, index) {
+    const from = this.tableau[fromCol];
+    if (!from.length) return false;
+
+    const card = from[from.length - 1];
+    if (!card.faceUp) return false;
+    if (!this.canMoveToFoundation(card, index)) return false;
+
+    this.saveState();
+    from.pop();
+    this.foundations[index].push(card);
+
+    if (from.length) from[from.length - 1].faceUp = true;
+
+    this.lastMove = { type: "foundation", index, cardId: card?.id ?? null };
+    this.checkWin();
+    return true;
+  }
 }
 
+window.DIFFICULTY_PRESETS = {
+  easy: { suitsCount: 2, cardsPerSuit: 4 },
+  normal: { suitsCount: 4, cardsPerSuit: 7 },
+  hard: { suitsCount: 4, cardsPerSuit: 10 }
+};
+
 window.game = new Game();
-game.initGame();
+game.initGame(window.DIFFICULTY_PRESETS.normal);

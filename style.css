@@ -2,84 +2,127 @@
   box-sizing: border-box;
 }
 
+:root {
+  --cardW: clamp(76px, 22vw, 140px);
+  --cardH: calc(var(--cardW) * 1.43);
+  --stackOverlap: calc(var(--cardH) * 0.65);
+  --gap: clamp(10px, 2.4vw, 20px);
+  --radius: 12px;
+}
+
 body {
   margin: 0;
-  padding: 20px;
+  padding: clamp(10px, 2.6vw, 20px);
   background: radial-gradient(circle at top, #1f8a43, #0a4f26);
   font-family: Arial, sans-serif;
   user-select: none;
   color: white;
 }
 
+button,
+select {
+  font: inherit;
+}
+
 /* ===== CONTROLS ===== */
 #controls {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 15px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.control {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+}
+
+.control-label {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+#controls button,
+#controls select {
+  padding: 10px 14px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: none;
 }
 
 #controls button {
-  padding: 6px 14px;
-  font-size: 14px;
-  border-radius: 6px;
-  border: none;
   cursor: pointer;
 }
 
 /* ===== GAME LAYOUT ===== */
 #game {
   display: flex;
-  gap: 40px;
+  gap: calc(var(--gap) * 2);
   align-items: flex-start;
 }
 
 /* ===== TABLEAU ===== */
 #tableau {
   display: flex;
-  gap: 20px;
+  gap: var(--gap);
+  align-items: flex-start;
 }
 
 /* ===== FOUNDATIONS ===== */
-#foundations-wrapper {
-  display: flex;
-  gap: 20px;
+#foundations {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--cardW), 1fr));
+  gap: var(--gap);
+  width: min(520px, 100%);
 }
 
-.foundation-column .foundation-texture {
-  border: 2px dashed rgba(255,255,255,0.4);
-  box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
-}
-
-/* ===== COLUMNS ===== */
+/* ===== COLUMNS / SLOTS ===== */
 .column {
-  width: 140px;
-  min-height: 200px;
+  width: var(--cardW);
+  min-height: var(--cardH);
   position: relative;
 }
 
-.foundation-column .column {
-  height: 200px;
-  background: rgba(0,0,0,0.35);
-  border: 2px dashed rgba(255,255,255,0.4);
-  border-radius: 12px;
-  box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
+.foundation-slot {
+  height: var(--cardH);
+  background: rgba(0, 0, 0, 0.35);
+  border: 2px dashed rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6);
+}
+
+.foundation-texture {
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--radius) - 2px);
+  background-size: cover;
+  background-position: center;
+  border: 2px dashed rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.45);
 }
 
 /* ===== CARDS ===== */
 .card {
-  width: 140px;
-  height: 200px;
-  border-radius: 12px;
-  box-shadow: 4px 4px 10px rgba(0,0,0,0.6);
-  cursor: grab;
+  width: var(--cardW);
+  height: var(--cardH);
+  border-radius: var(--radius);
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.6);
+  cursor: default;
   position: relative;
-
-  /* Плавность */
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+  will-change: transform;
 }
 
+.card.face-up {
+  cursor: grab;
+  touch-action: none;
+}
 
 .card:active {
   cursor: grabbing;
@@ -88,13 +131,13 @@ body {
 .card img {
   width: 100%;
   height: 100%;
-  border-radius: 12px;
+  border-radius: var(--radius);
   pointer-events: none;
 }
 
 /* ===== STACK OVERLAP ===== */
 .column .card:not(:first-child) {
-  margin-top: -130px;
+  margin-top: calc(var(--stackOverlap) * -1);
 }
 
 /* ===== VALUE ===== */
@@ -106,51 +149,83 @@ body {
   font-size: 18px;
   font-weight: bold;
   opacity: 0.85;
-  text-shadow: 0 0 4px rgba(0,0,0,0.7);
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
   pointer-events: none;
 }
 
-
-/* ===== HIGHLIGHT ===== */
-.column.highlight {
-  box-shadow: 0 0 18px rgba(255,255,0,0.9);
+/* ===== SELECTION / HIGHLIGHT ===== */
+.card.selected {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.8);
+  z-index: 50;
 }
 
-/* Hover-эффект */
+.card.in-selected-stack {
+  filter: brightness(1.05);
+}
 
-.card.dragging {
-  transform: translateY(-10px) scale(1.08);
-  box-shadow: 0 18px 35px rgba(0,0,0,0.8);
-  cursor: grabbing;
-  z-index: 1000;
+.column.highlight,
+.foundation-slot.highlight {
+  box-shadow: 0 0 18px rgba(255, 255, 0, 0.9);
+}
+
+.card.drag-source {
+  filter: brightness(0.95);
+}
+
+.drag-ghost {
+  transform-origin: center;
+  opacity: 0.95;
+  z-index: 2000;
+  transition: none !important;
+}
+
+.card.flip-in {
+  animation: flipIn 220ms ease-out;
+}
+
+.card.drop-ok {
+  animation: dropOk 160ms ease-out;
+}
+
+@keyframes flipIn {
+  from {
+    transform: perspective(600px) rotateY(-70deg) scale(0.98);
+    filter: brightness(0.92);
+  }
+  to {
+    transform: perspective(600px) rotateY(0deg) scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes dropOk {
+  from {
+    transform: scale(0.985);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
 /* ===== PREVIEW ===== */
 #preview {
-  width: 320px;
-  height: 450px;
+  width: min(320px, 100%);
+  height: auto;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 #preview-card {
-  width: 300px;
-  height: 430px;
+  width: min(300px, 100%);
+  aspect-ratio: 140 / 200;
   border-radius: 18px;
-
   border: 2px solid rgba(255, 255, 255, 0.35);
   background: rgba(0, 0, 0, 0.35);
-
-  box-shadow:
-    inset 0 0 25px rgba(0,0,0,0.6),
-    0 10px 25px rgba(0,0,0,0.5);
-
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.6), 0 10px 25px rgba(0, 0, 0, 0.5);
   opacity: 1;
-  transition:
-    background 0.2s ease,
-    box-shadow 0.2s ease;
-
+  transition: background 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -162,9 +237,7 @@ body {
   border-radius: 16px;
   opacity: 0;
   transform: scale(0.96);
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 #preview-card.show img {
@@ -182,18 +255,89 @@ body {
 #win-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 48px;
-  color: #fff;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
+  padding: 20px;
 }
 
 #win-overlay.show {
   opacity: 1;
   pointer-events: all;
+}
+
+.win-content {
+  width: min(420px, 100%);
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  padding: 18px 16px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+  animation: winPop 180ms ease-out;
+}
+
+.win-title {
+  font-size: 38px;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+.win-btn {
+  cursor: pointer;
+  padding: 12px 18px;
+  min-height: 44px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+}
+
+@keyframes winPop {
+  from {
+    transform: translateY(8px) scale(0.98);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  #game {
+    flex-direction: column;
+    gap: var(--gap);
+  }
+
+  #foundations {
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(var(--cardW), 1fr));
+  }
+
+  #tableau {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x proximity;
+  }
+
+  #tableau .column {
+    scroll-snap-align: start;
+  }
+
+  #preview {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }

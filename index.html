@@ -1,40 +1,51 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
-<meta charset="UTF-8" />
-<title>Эко-пасьянс</title>
-<link rel="stylesheet" href="style.css" />
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Эко-пасьянс</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="controls">
+      <label class="control">
+        <span class="control-label">Сложность</span>
+        <select id="difficultySelect" aria-label="Сложность">
+          <option value="easy">Лёгкий</option>
+          <option value="normal" selected>Норм</option>
+          <option value="hard">Сложный</option>
+        </select>
+      </label>
 
+      <button id="undoBtn" type="button">Undo</button>
+      <button id="restartBtn" type="button">Restart</button>
+    </div>
 
-<div id="controls">
-<button id="undoBtn">Undo</button>
-<button id="restartBtn">Restart</button>
-</div>
+    <div id="game">
+      <div id="tableau" aria-label="Колонки"></div>
 
+      <div id="foundations" aria-label="Фундаменты"></div>
 
-<div id="game">
-<div id="tableau"></div>
+      <div id="preview" aria-label="Просмотр карты">
+        <div id="preview-card"></div>
+      </div>
+    </div>
 
-<div id="win-overlay">Победа 🎉</div>
+    <div id="win-overlay" role="dialog" aria-modal="true" aria-label="Победа">
+      <div class="win-content">
+        <div class="win-title">Победа</div>
+        <button id="winRestartBtn" class="win-btn" type="button">
+          Play again
+        </button>
+      </div>
+    </div>
 
-<div id="foundations-wrapper">
-<div class="foundation-column"></div>
-<div class="foundation-column"></div>
-</div>
-
-
-<div id="preview">
-<div id="preview-card"></div>
-</div>
-</div>
-
-
-<script src="script.js"></script>
-<script src="render.js"></script>
-<script src="input.js"></script>
-<script src="ui.js"></script>
-</body>
-
+    <script src="script.js"></script>
+    <script src="render.js"></script>
+    <script src="input.js"></script>
+    <script src="ui.js"></script>
+  </body>
 </html>
