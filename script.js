@@ -47,14 +47,7 @@ class Game {
     const values = Array.from({ length: this.config.cardsPerSuit }, (_, i) => i + 1);
 
     const suits = this.pickRandomSuits(totalSuitsAvailable, this.config.suitsCount);
-    const deck = this.createDeck(suits, values);
-
-    this.tableau = Array.from({ length: this.config.columnsCount }, () => []);
-    deck.forEach((card, i) => this.tableau[i % this.config.columnsCount].push(card));
-
-    this.tableau.forEach(col => {
-      if (col.length) col[col.length - 1].faceUp = true;
-    });
+    this.tableau = this.createSolvableTableau(suits, values, this.config.columnsCount);
 
     suits.forEach(suit => {
       this.foundations.push([]);
@@ -86,6 +79,29 @@ class Game {
       if (!suits.includes(r)) suits.push(r);
     }
     return suits;
+  }
+
+
+  createSolvableTableau(suits, values, columnsCount) {
+    const tableau = Array.from({ length: columnsCount }, () => []);
+
+    const shuffledSuits = [...suits];
+    this.shuffle(shuffledSuits);
+
+    shuffledSuits.forEach((suit, idx) => {
+      const colIndex = idx % columnsCount;
+      for (let v = values.length; v >= 1; v--) {
+        tableau[colIndex].push({
+          id: `${suit}:${v}`,
+          suit,
+          value: v,
+          faceUp: true,
+          img: `cards/${suit}/${v}.png`
+        });
+      }
+    });
+
+    return tableau;
   }
 
   createDeck(suits, values) {

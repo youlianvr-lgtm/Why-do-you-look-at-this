@@ -331,7 +331,7 @@ select {
   }
 
   #preview {
-    display: none;
+    width: 100%;
   }
 }
 
@@ -339,5 +339,29 @@ select {
   * {
     transition: none !important;
     animation: none !important;
+  }
+}
+
+#preview-card.drag-preview {
+  width: min(380px, 95vw);
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.6), 0 14px 30px rgba(0, 0, 0, 0.55);
+}
+
+@media (max-width: 900px) {
+  #game {
+    flex-direction: column;
+  }
+
+  #preview {
+    width: 100%;
+    order: 3;
+  }
+
+  #preview-card {
+    width: min(360px, 92vw);
+  }
+
+  #preview-card.drag-preview {
+    width: min(420px, 96vw);
   }
 }
