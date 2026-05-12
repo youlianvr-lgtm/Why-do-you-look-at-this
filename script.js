@@ -137,6 +137,14 @@ class Game {
       tableau[toCol].push(...moving);
     }
 
+    // Закрываем карты: в каждой колонке открыта только верхняя.
+    tableau.forEach(col => {
+      col.forEach(card => {
+        card.faceUp = false;
+      });
+      if (col.length) col[col.length - 1].faceUp = true;
+    });
+
     return tableau;
   }
 

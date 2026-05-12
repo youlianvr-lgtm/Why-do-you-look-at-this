@@ -124,6 +124,11 @@ function clearPreview() {
 }
 
 // SELECTION / HIGHLIGHTS
+function shouldShowMoveHighlights() {
+  const key = document.getElementById("difficultySelect")?.value || "normal";
+  return key === "easy";
+}
+
 function renderSelection() {
   document
     .querySelectorAll(".card.selected, .card.in-selected-stack")
@@ -147,6 +152,8 @@ function renderSelection() {
     if (i === index) cardEl.classList.add("selected");
     if (i > index) cardEl.classList.add("in-selected-stack");
   });
+
+  if (!shouldShowMoveHighlights()) return;
 
   const base = stack[0];
   game.tableau.forEach((_, toCol) => {
