@@ -1,6 +1,4 @@
-// ===============================
 // Controller — пользовательский ввод (tap + pointer drag)
-// ===============================
 
 window.inputState = {
   selected: null,
@@ -64,9 +62,7 @@ function attemptMove(selected, target) {
   return false;
 }
 
-// ===============================
 // Pointer-based drag (mouse + touch)
-// ===============================
 function onCardPointerDown(e) {
   if (e.button !== undefined && e.button !== 0) return;
 
@@ -96,7 +92,6 @@ function onCardPointerDown(e) {
   try {
     cardEl.setPointerCapture(e.pointerId);
   } catch {
-    // ignore
   }
 
   cardEl.onpointermove = onCardPointerMove;
@@ -210,7 +205,6 @@ function detectDropTarget(x, y) {
   return null;
 }
 
-// Click outside: clear selection
 document.addEventListener(
   "click",
   e => {

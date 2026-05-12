@@ -1,6 +1,4 @@
-// ===============================
 // Game — ядро логики
-// ===============================
 
 class Game {
   constructor() {
@@ -55,9 +53,7 @@ class Game {
     });
   }
 
-  // ===============================
   // Победа
-  // ===============================
   checkWin() {
     const allComplete = this.foundations.every(
       f => f.length === this.config.cardsPerSuit
@@ -69,9 +65,7 @@ class Game {
     return this.foundations[index].length === this.config.cardsPerSuit;
   }
 
-  // ===============================
   // Служебные методы
-  // ===============================
   pickRandomSuits(total, count) {
     const suits = [];
     while (suits.length < count) {
@@ -170,9 +164,7 @@ class Game {
     }
   }
 
-  // ===============================
   // История
-  // ===============================
   saveState() {
     this.history.push(
       JSON.stringify({
@@ -193,9 +185,7 @@ class Game {
     this.config = state.config ?? this.config;
   }
 
-  // ===============================
   // Перемещения
-  // ===============================
   getMovableStack(fromCol, startIndex) {
     const col = this.tableau[fromCol];
     const stack = col.slice(startIndex);

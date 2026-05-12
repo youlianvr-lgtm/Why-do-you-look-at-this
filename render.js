@@ -1,7 +1,5 @@
-// ===============================
 // Renderer — отображение состояния игры
 // Не содержит игровой логики
-// ===============================
 
 function render() {
   renderTableau();
@@ -10,9 +8,7 @@ function render() {
   applyLightAnimations();
 }
 
-// ===============================
 // TABLEAU
-// ===============================
 function renderTableau() {
   const el = document.getElementById("tableau");
   el.innerHTML = "";
@@ -33,9 +29,7 @@ function renderTableau() {
   });
 }
 
-// ===============================
 // FOUNDATIONS (динамически)
-// ===============================
 function renderFoundations() {
   const root = document.getElementById("foundations");
   root.innerHTML = "";
@@ -66,9 +60,7 @@ function renderFoundations() {
   });
 }
 
-// ===============================
 // CARD
-// ===============================
 function createCard(card, colIndex, index) {
   const el = document.createElement("div");
   el.className = "card";
@@ -108,9 +100,7 @@ function createCard(card, colIndex, index) {
   return el;
 }
 
-// ===============================
 // PREVIEW
-// ===============================
 function showPreview(card, options = {}) {
   const box = document.getElementById("preview-card");
   if (!card || !card.faceUp) return;
@@ -133,9 +123,7 @@ function clearPreview() {
   box.classList.remove("show", "drag-preview");
 }
 
-// ===============================
 // SELECTION / HIGHLIGHTS
-// ===============================
 function renderSelection() {
   document
     .querySelectorAll(".card.selected, .card.in-selected-stack")
@@ -181,9 +169,7 @@ function renderSelection() {
   }
 }
 
-// ===============================
 // Light animations (flip + drop feedback)
-// ===============================
 function applyLightAnimations() {
   const cssEscape =
     window.CSS && typeof window.CSS.escape === "function"
@@ -205,7 +191,6 @@ function applyLightAnimations() {
       .querySelectorAll(`.card[data-card-id="${cssEscape(id)}"]`)
       .forEach(el => {
         el.classList.remove("flip-in");
-        // force reflow for reliable restart (small, acceptable here)
         void el.offsetWidth;
         el.classList.add("flip-in");
       });

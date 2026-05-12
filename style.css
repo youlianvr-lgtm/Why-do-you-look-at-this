@@ -24,7 +24,6 @@ select {
   font: inherit;
 }
 
-/* ===== CONTROLS ===== */
 #controls {
   display: flex;
   flex-wrap: wrap;
@@ -60,21 +59,18 @@ select {
   cursor: pointer;
 }
 
-/* ===== GAME LAYOUT ===== */
 #game {
   display: flex;
   gap: calc(var(--gap) * 2);
   align-items: flex-start;
 }
 
-/* ===== TABLEAU ===== */
 #tableau {
   display: flex;
   gap: var(--gap);
   align-items: flex-start;
 }
 
-/* ===== FOUNDATIONS ===== */
 #foundations {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(var(--cardW), 1fr));
@@ -82,7 +78,6 @@ select {
   width: min(520px, 100%);
 }
 
-/* ===== COLUMNS / SLOTS ===== */
 .column {
   width: var(--cardW);
   min-height: var(--cardH);
@@ -107,7 +102,6 @@ select {
   box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.45);
 }
 
-/* ===== CARDS ===== */
 .card {
   width: var(--cardW);
   height: var(--cardH);
@@ -135,12 +129,10 @@ select {
   pointer-events: none;
 }
 
-/* ===== STACK OVERLAP ===== */
 .column .card:not(:first-child) {
   margin-top: calc(var(--stackOverlap) * -1);
 }
 
-/* ===== VALUE ===== */
 .card .value {
   position: absolute;
   top: 12px;
@@ -153,7 +145,6 @@ select {
   pointer-events: none;
 }
 
-/* ===== SELECTION / HIGHLIGHT ===== */
 .card.selected {
   transform: translateY(-10px) scale(1.05);
   box-shadow: 0 18px 35px rgba(0, 0, 0, 0.8);
@@ -208,7 +199,6 @@ select {
   }
 }
 
-/* ===== PREVIEW ===== */
 #preview {
   width: min(320px, 100%);
   height: auto;
@@ -245,13 +235,11 @@ select {
   transform: scale(1);
 }
 
-/* ===== FOUNDATION COMPLETE ===== */
 .foundation-slot.complete {
   border: 2px solid gold;
   box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
 }
 
-/* ===== WIN OVERLAY ===== */
 #win-overlay {
   position: fixed;
   inset: 0;
@@ -307,7 +295,6 @@ select {
   }
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {
   #game {
     flex-direction: column;
