@@ -32,7 +32,7 @@ class Game {
     const columnsCount =
       Number.isFinite(columnsCountRaw) && columnsCountRaw > 0
         ? Math.floor(columnsCountRaw)
-        : Math.min(8, Math.max(4, Math.ceil(totalCards / 7)));
+        : Math.min(8, Math.max(6, Math.ceil(totalCards / 7)));
 
     this.config = { suitsCount, cardsPerSuit, columnsCount };
   }
@@ -79,7 +79,8 @@ class Game {
   createSolvableTableau(suits, values, columnsCount) {
     const tableau = Array.from({ length: columnsCount }, () => []);
 
-    // Базовая (уже решенная) позиция по мастям.
+    // Стартуем из заведомо решенной позиции (по мастям),
+    // затем перемешиваем ТОЛЬКО легальными ходами.
     const shuffledSuits = [...suits];
     this.shuffle(shuffledSuits);
 
@@ -96,46 +97,57 @@ class Game {
       }
     });
 
-    // Перемешиваем позицию только легальными ходами между колонками.
-    // Такая позиция гарантированно решаема (обратной последовательностью ходов).
-    const mixes = Math.max(80, suits.length * values.length * 6);
+    const mixes = Math.max(120, suits.length * values.length * 8);
 
     for (let step = 0; step < mixes; step++) {
-      const fromCandidates = [];
+      const candidates = [];
 
       for (let fromCol = 0; fromCol < columnsCount; fromCol++) {
         const col = tableau[fromCol];
+        if (!col.length) continue;
+
         for (let startIndex = 0; startIndex < col.length; startIndex++) {
           const stack = col.slice(startIndex);
-          const validStack = stack.every((card, i) => i === 0 || stack[i - 1].value === card.value + 1);
+          const validStack = stack.every(
+            (card, i) => i === 0 || stack[i - 1].value === card.value + 1
+          );
           if (!validStack) continue;
 
-          const baseCard = stack[0];
-          const possibleTargets = [];
+          const base = stack[0];
+          const targets = [];
+
           for (let toCol = 0; toCol < columnsCount; toCol++) {
             if (toCol === fromCol) continue;
-            const targetCol = tableau[toCol];
-            if (!targetCol.length) {
-              possibleTargets.push(toCol);
+            const target = tableau[toCol];
+
+            if (!target.length) {
+              targets.push(toCol);
               continue;
             }
-            const top = targetCol[targetCol.length - 1];
-            if (top.value === baseCard.value + 1) possibleTargets.push(toCol);
+
+            const top = target[target.length - 1];
+            if (top.value === base.value + 1) targets.push(toCol);
           }
 
-          if (possibleTargets.length) {
-            fromCandidates.push({ fromCol, startIndex, possibleTargets });
-          }
+          if (targets.length) candidates.push({ fromCol, startIndex, targets });
         }
       }
 
-      if (!fromCandidates.length) break;
+      if (!candidates.length) break;
 
-      const pick = fromCandidates[Math.floor(Math.random() * fromCandidates.length)];
-      const toCol = pick.possibleTargets[Math.floor(Math.random() * pick.possibleTargets.length)];
+      const pick = candidates[Math.floor(Math.random() * candidates.length)];
+      const toCol = pick.targets[Math.floor(Math.random() * pick.targets.length)];
       const moving = tableau[pick.fromCol].splice(pick.startIndex);
       tableau[toCol].push(...moving);
     }
+
+    // Скрываем карты: открыта только верхняя карта каждой колонки.
+    tableau.forEach(col => {
+      col.forEach(card => {
+        card.faceUp = false;
+      });
+      if (col.length) col[col.length - 1].faceUp = true;
+    });
 
     return tableau;
   }
