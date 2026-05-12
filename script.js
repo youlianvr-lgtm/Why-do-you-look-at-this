@@ -85,6 +85,7 @@ class Game {
   createSolvableTableau(suits, values, columnsCount) {
     const tableau = Array.from({ length: columnsCount }, () => []);
 
+    // Базовая (уже решенная) позиция по мастям.
     const shuffledSuits = [...suits];
     this.shuffle(shuffledSuits);
 
@@ -100,6 +101,47 @@ class Game {
         });
       }
     });
+
+    // Перемешиваем позицию только легальными ходами между колонками.
+    // Такая позиция гарантированно решаема (обратной последовательностью ходов).
+    const mixes = Math.max(80, suits.length * values.length * 6);
+
+    for (let step = 0; step < mixes; step++) {
+      const fromCandidates = [];
+
+      for (let fromCol = 0; fromCol < columnsCount; fromCol++) {
+        const col = tableau[fromCol];
+        for (let startIndex = 0; startIndex < col.length; startIndex++) {
+          const stack = col.slice(startIndex);
+          const validStack = stack.every((card, i) => i === 0 || stack[i - 1].value === card.value + 1);
+          if (!validStack) continue;
+
+          const baseCard = stack[0];
+          const possibleTargets = [];
+          for (let toCol = 0; toCol < columnsCount; toCol++) {
+            if (toCol === fromCol) continue;
+            const targetCol = tableau[toCol];
+            if (!targetCol.length) {
+              possibleTargets.push(toCol);
+              continue;
+            }
+            const top = targetCol[targetCol.length - 1];
+            if (top.value === baseCard.value + 1) possibleTargets.push(toCol);
+          }
+
+          if (possibleTargets.length) {
+            fromCandidates.push({ fromCol, startIndex, possibleTargets });
+          }
+        }
+      }
+
+      if (!fromCandidates.length) break;
+
+      const pick = fromCandidates[Math.floor(Math.random() * fromCandidates.length)];
+      const toCol = pick.possibleTargets[Math.floor(Math.random() * pick.possibleTargets.length)];
+      const moving = tableau[pick.fromCol].splice(pick.startIndex);
+      tableau[toCol].push(...moving);
+    }
 
     return tableau;
   }
