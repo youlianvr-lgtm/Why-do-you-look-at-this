@@ -1,6 +1,4 @@
-// ===============================
 // Controller — пользовательский ввод (tap + pointer drag)
-// ===============================
 
 window.inputState = {
   selected: null,
@@ -64,9 +62,7 @@ function attemptMove(selected, target) {
   return false;
 }
 
-// ===============================
 // Pointer-based drag (mouse + touch)
-// ===============================
 function onCardPointerDown(e) {
   if (e.button !== undefined && e.button !== 0) return;
 
@@ -96,7 +92,6 @@ function onCardPointerDown(e) {
   try {
     cardEl.setPointerCapture(e.pointerId);
   } catch {
-    // ignore
   }
 
   cardEl.onpointermove = onCardPointerMove;
@@ -125,6 +120,9 @@ function onCardPointerMove(e) {
     drag.sourceEl.classList.add("drag-source");
     drag.ghost = createDragGhost(drag.sourceEl);
     document.body.appendChild(drag.ghost);
+
+    const card = game.tableau[drag.from.col]?.[drag.from.index];
+    if (card?.faceUp) showPreview(card, { dragging: true });
   }
 
   if (drag.ghost) positionGhost(drag.ghost, drag.lastX, drag.lastY);
@@ -142,6 +140,7 @@ function onCardPointerUp(e) {
       const moved = attemptMove(drag.from, target);
       if (moved) inputState.clearSelection();
     }
+    clearPreview();
     render();
   }
 
@@ -152,6 +151,7 @@ function onCardPointerCancel(e) {
   const drag = inputState.dragging;
   if (!drag || drag.pointerId !== e.pointerId) return;
   cleanupDragHandlers(drag.sourceEl);
+  clearPreview();
   inputState.dragging = null;
   render();
 }
@@ -205,7 +205,6 @@ function detectDropTarget(x, y) {
   return null;
 }
 
-// Click outside: clear selection
 document.addEventListener(
   "click",
   e => {
