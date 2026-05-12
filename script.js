@@ -98,6 +98,8 @@ class Game {
     });
 
     const mixes = Math.max(120, suits.length * values.length * 8);
+    const totalCards = suits.length * values.length;
+    const maxColumnHeight = Math.ceil(totalCards / columnsCount) + 2;
 
     for (let step = 0; step < mixes; step++) {
       const candidates = [];
@@ -106,7 +108,8 @@ class Game {
         const col = tableau[fromCol];
         if (!col.length) continue;
 
-        for (let startIndex = 0; startIndex < col.length; startIndex++) {
+        const startIndex = col.length - 1;
+        {
           const stack = col.slice(startIndex);
           const validStack = stack.every(
             (card, i) => i === 0 || stack[i - 1].value === card.value + 1
@@ -119,6 +122,7 @@ class Game {
           for (let toCol = 0; toCol < columnsCount; toCol++) {
             if (toCol === fromCol) continue;
             const target = tableau[toCol];
+            if (target.length >= maxColumnHeight) continue;
 
             if (!target.length) {
               targets.push(toCol);
