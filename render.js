@@ -111,24 +111,26 @@ function createCard(card, colIndex, index) {
 // ===============================
 // PREVIEW
 // ===============================
-function showPreview(card) {
+function showPreview(card, options = {}) {
   const box = document.getElementById("preview-card");
   if (!card || !card.faceUp) return;
 
   box.innerHTML = "";
-  box.classList.remove("show");
+  box.classList.remove("show", "drag-preview");
 
   const img = document.createElement("img");
   img.src = card.img;
   img.alt = "";
   box.appendChild(img);
 
+  if (options.dragging) box.classList.add("drag-preview");
+
   requestAnimationFrame(() => box.classList.add("show"));
 }
 
 function clearPreview() {
   const box = document.getElementById("preview-card");
-  box.classList.remove("show");
+  box.classList.remove("show", "drag-preview");
 }
 
 // ===============================

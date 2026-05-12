@@ -47,14 +47,7 @@ class Game {
     const values = Array.from({ length: this.config.cardsPerSuit }, (_, i) => i + 1);
 
     const suits = this.pickRandomSuits(totalSuitsAvailable, this.config.suitsCount);
-    const deck = this.createDeck(suits, values);
-
-    this.tableau = Array.from({ length: this.config.columnsCount }, () => []);
-    deck.forEach((card, i) => this.tableau[i % this.config.columnsCount].push(card));
-
-    this.tableau.forEach(col => {
-      if (col.length) col[col.length - 1].faceUp = true;
-    });
+    this.tableau = this.createSolvableTableau(suits, values, this.config.columnsCount);
 
     suits.forEach(suit => {
       this.foundations.push([]);
@@ -86,6 +79,71 @@ class Game {
       if (!suits.includes(r)) suits.push(r);
     }
     return suits;
+  }
+
+
+  createSolvableTableau(suits, values, columnsCount) {
+    const tableau = Array.from({ length: columnsCount }, () => []);
+
+    // Базовая (уже решенная) позиция по мастям.
+    const shuffledSuits = [...suits];
+    this.shuffle(shuffledSuits);
+
+    shuffledSuits.forEach((suit, idx) => {
+      const colIndex = idx % columnsCount;
+      for (let v = values.length; v >= 1; v--) {
+        tableau[colIndex].push({
+          id: `${suit}:${v}`,
+          suit,
+          value: v,
+          faceUp: true,
+          img: `cards/${suit}/${v}.png`
+        });
+      }
+    });
+
+    // Перемешиваем позицию только легальными ходами между колонками.
+    // Такая позиция гарантированно решаема (обратной последовательностью ходов).
+    const mixes = Math.max(80, suits.length * values.length * 6);
+
+    for (let step = 0; step < mixes; step++) {
+      const fromCandidates = [];
+
+      for (let fromCol = 0; fromCol < columnsCount; fromCol++) {
+        const col = tableau[fromCol];
+        for (let startIndex = 0; startIndex < col.length; startIndex++) {
+          const stack = col.slice(startIndex);
+          const validStack = stack.every((card, i) => i === 0 || stack[i - 1].value === card.value + 1);
+          if (!validStack) continue;
+
+          const baseCard = stack[0];
+          const possibleTargets = [];
+          for (let toCol = 0; toCol < columnsCount; toCol++) {
+            if (toCol === fromCol) continue;
+            const targetCol = tableau[toCol];
+            if (!targetCol.length) {
+              possibleTargets.push(toCol);
+              continue;
+            }
+            const top = targetCol[targetCol.length - 1];
+            if (top.value === baseCard.value + 1) possibleTargets.push(toCol);
+          }
+
+          if (possibleTargets.length) {
+            fromCandidates.push({ fromCol, startIndex, possibleTargets });
+          }
+        }
+      }
+
+      if (!fromCandidates.length) break;
+
+      const pick = fromCandidates[Math.floor(Math.random() * fromCandidates.length)];
+      const toCol = pick.possibleTargets[Math.floor(Math.random() * pick.possibleTargets.length)];
+      const moving = tableau[pick.fromCol].splice(pick.startIndex);
+      tableau[toCol].push(...moving);
+    }
+
+    return tableau;
   }
 
   createDeck(suits, values) {
